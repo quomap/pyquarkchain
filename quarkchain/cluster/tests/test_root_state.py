@@ -30,7 +30,11 @@ def create_default_state(env, diff_calc=None):
             {env.quark_chain_config.genesis_token: state.header_tip.coinbase_amount},
         )
 
-    root_block.finalize()
+    root_block.finalize(
+        coinbase_amount=r_state.coinbase_with_tax(
+            [header.get_hash() for header in root_block.minor_block_header_list]
+        )
+    )
     assert r_state.add_block(root_block)
     for state in s_state_list.values():
         assert state.add_root_block(root_block)
@@ -200,7 +204,11 @@ class TestRootState(unittest.TestCase):
 
         root_block1.add_minor_block_header(b2.header).add_minor_block_header(
             b3.header
-        ).finalize()
+        ).finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block1.minor_block_header_list]
+            )
+        )
 
         self.assertFalse(r_state.add_block(root_block1))
         self.assertFalse(s_state0.add_root_block(root_block1))
@@ -223,7 +231,11 @@ class TestRootState(unittest.TestCase):
             root_block1.create_block_to_append()
             .add_minor_block_header(b4.header)
             .add_minor_block_header(b5.header)
-            .finalize()
+        )
+        root_block2.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block2.minor_block_header_list]
+            )
         )
 
         self.assertTrue(r_state.add_block(root_block2))
@@ -338,7 +350,11 @@ class TestRootState(unittest.TestCase):
 
         # create a fork
         root_block00.header.create_time += 1
-        root_block00.finalize()
+        root_block00.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block00.minor_block_header_list]
+            )
+        )
         self.assertNotEqual(
             root_block0.header.get_hash(), root_block00.header.get_hash()
         )
@@ -414,15 +430,21 @@ class TestRootState(unittest.TestCase):
             m1.header.get_hash(),
             {env.quark_chain_config.genesis_token: m1.header.coinbase_amount},
         )
-        root_block1 = (
-            root_block0.create_block_to_append(nonce=0)
-            .add_minor_block_header(m1.header)
-            .finalize()
+        root_block1 = root_block0.create_block_to_append(
+            nonce=0
+        ).add_minor_block_header(m1.header)
+        root_block1.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block1.minor_block_header_list]
+            )
         )
-        root_block2 = (
-            root_block0.create_block_to_append(nonce=1)
-            .add_minor_block_header(m1.header)
-            .finalize()
+        root_block2 = root_block0.create_block_to_append(
+            nonce=1
+        ).add_minor_block_header(m1.header)
+        root_block2.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block2.minor_block_header_list]
+            )
         )
 
         self.assertTrue(r_state.add_block(root_block1))
@@ -438,19 +460,25 @@ class TestRootState(unittest.TestCase):
             m2.header.get_hash(),
             {env.quark_chain_config.genesis_token: m2.header.coinbase_amount},
         )
-        root_block3 = (
-            root_block1.create_block_to_append()
-            .add_minor_block_header(m2.header)
-            .finalize()
+        root_block3 = root_block1.create_block_to_append().add_minor_block_header(
+            m2.header
+        )
+        root_block3.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block3.minor_block_header_list]
+            )
         )
 
         with self.assertRaises(ValueError):
             r_state.add_block(root_block3)
 
-        root_block4 = (
-            root_block2.create_block_to_append()
-            .add_minor_block_header(m2.header)
-            .finalize()
+        root_block4 = root_block2.create_block_to_append().add_minor_block_header(
+            m2.header
+        )
+        root_block4.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block4.minor_block_header_list]
+            )
         )
         self.assertTrue(r_state.add_block(root_block4))
 
@@ -492,15 +520,21 @@ class TestRootState(unittest.TestCase):
             m2.header.get_hash(),
             {env.quark_chain_config.genesis_token: m2.header.coinbase_amount},
         )
-        root_block1 = (
-            root_block0.create_block_to_append(nonce=0)
-            .add_minor_block_header(m1.header)
-            .finalize()
+        root_block1 = root_block0.create_block_to_append(
+            nonce=0
+        ).add_minor_block_header(m1.header)
+        root_block1.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block1.minor_block_header_list]
+            )
         )
-        root_block2 = (
-            root_block0.create_block_to_append(nonce=1)
-            .add_minor_block_header(m2.header)
-            .finalize()
+        root_block2 = root_block0.create_block_to_append(
+            nonce=1
+        ).add_minor_block_header(m2.header)
+        root_block2.finalize(
+            coinbase_amount=r_state.coinbase_with_tax(
+                [header.get_hash() for header in root_block2.minor_block_header_list]
+            )
         )
 
         self.assertTrue(r_state.add_block(root_block1))
